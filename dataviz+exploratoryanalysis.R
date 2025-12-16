@@ -1,4 +1,11 @@
-#Mapping tracts with and without EV Chargers
+#Mapping tracts with and without EV Chargers in the United States
+#The following plot shows a map of the entire United States and where there is 
+#access to EV chargers and where there isn't within the 1 mile buffer.
+#It shows there is generally more access to chargers in urban and suburban areas and much less in rural areas.
+#Furthermore, there is more concentration of charger access along the West Coast and Northeast, which are both 
+#highly populous areas. This maps provides a large overview of what charger access looks like across the U.S. 
+#and it is clear that chargers are more accessible in areas with more population density. 
+
 library(ggplot2)
 library(dplyr)
 library(sf)
@@ -12,7 +19,14 @@ ggplot(acs_with_access) +
     fill = NULL
   ) +
   theme_minimal()
-#Charger Access in Virginia
+
+# Charger Access in Virginia
+#The plot below takes a deeper look at the charger access map, and focuses just on the state of Virginia. 
+#It clearly shows that EV chargers are clustered in specific areas and not evenly distributed. 
+#There are high concentration of chargers in Northern Virginia, Richmond, and Virginia Beach. Furthermore,
+#the chargers tend to cluster around interstate highways. Intuitively, this makes sense that 
+#the more popular areas tend to have more access to EV chargers. 
+
 va_tracts <- acs_with_access %>%
   filter(STATEFP == "51")
 
@@ -29,6 +43,12 @@ ggplot(va_tracts) +
   theme_minimal()
 
 #Charger Access in California 
+#The other state that we looked at more deeply was California, there was a clear high access to 
+#chargers in California specifically, so it is interesting to identify where there are gaps in such a
+#saturated area. Similar to the map of Virginia, California's chargers are also concentrated most strongly in the Bay Area,
+#LA, and San Diego. There is more charger clusters in rural areas such as Central Valley. California exemplifies
+#a high investment and adoption scenario for EV chargers and can be used as a blueprint for the rest of the country. 
+
 ca_tracts <- acs_with_access %>%
   filter(STATEFP == "06")
 
@@ -44,7 +64,13 @@ ggplot(ca_tracts) +
   ) +
   theme_minimal()
 
-#Scatterplot between EV Chargers and Population below Poverty 
+#Scatter plot between EV Chargers and Population below Poverty 
+#This last plot is a scatter plot between EV charger access and how much of the population 
+#is below the poverty line. It shows a relatively weak positive association between the 
+#two variables. The positive trend that is reflected in the plot is likely a result of more charger
+#access in urban areas, rather than equity in distribution. Further enforces the point that there
+#are a number of geographic factors that influence charger access and may not determined by equity.
+
 ggplot(acs_with_access, aes(x = pov_below, y = chargers_accessible)) +
   geom_point(alpha = 0.25, size = 0.7) +
   geom_smooth(method = "lm", se = FALSE) +
@@ -55,30 +81,8 @@ ggplot(acs_with_access, aes(x = pov_below, y = chargers_accessible)) +
     y = "Accessible EV Chargers (log scale)"
   ) +
   theme_minimal()
-#Initial conclusions: 
-#“Nationally, EV charger access shows only a weak positive association with the
-#size of the population below the poverty line, a pattern largely driven by 
-#urbanization rather than targeted infrastructure equity.”
-#not worth exploring state specific bc similar results 
 
-#Chargers Accessible in VA
-ggplot(va_data) +
-  geom_sf(aes(fill = chargers_accessible), color = NA) +
-  scale_fill_viridis_c(
-    option = "plasma",   # or "viridis", "magma"
-    trans = "sqrt",      # sqrt scale helps with skew
-    na.value = "grey90"
-  ) +
-  labs(
-    title = "Accessible EV Chargers by Census Tract — Virginia",
-    fill = "Chargers\nAccessible"
-  ) +
-  theme_minimal()
 
-#The map clearly shows that accessible EV chargers are highly clustered, 
-#not evenly distributed across Virginia. High-access tracts are concentrated in:
-# Northern Virginia (DC metro area), Richmond metro, Hampton Roads / Tidewater
-#, Smaller clusters around college towns and urban centers
-#Even without demographic variables layered on, the map shows: 
-#Urban/suburban tracts = higher charger access Rural tracts = minimal or no access
+
+
 
