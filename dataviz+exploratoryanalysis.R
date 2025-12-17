@@ -83,6 +83,28 @@ ggplot(acs_with_access, aes(x = pov_below, y = chargers_accessible)) +
   theme_minimal()
 
 
+#Summarizing / Visualizing Distribution of # of Chargers
 
+acs_with_access %>%
+  ggplot(aes(x = chargers_accessible)) +
+  geom_histogram(bins = 30, fill = "steelblue", color = "white") +
+  labs(
+    title = "Distribution of Accessible EV Chargers by Census Tract",
+    x = "Number of Accessible Chargers",
+    y = "Number of Census Tracts"
+  ) +
+  theme_minimal()
 
+acs_with_access %>%
+  summarize(
+    n_tracts = n(),
+    min = min(chargers_accessible, na.rm = TRUE),
+    p10 = quantile(chargers_accessible, 0.10, na.rm = TRUE),
+    p25 = quantile(chargers_accessible, 0.25, na.rm = TRUE),
+    median = median(chargers_accessible, na.rm = TRUE),
+    mean = mean(chargers_accessible, na.rm = TRUE),
+    p75 = quantile(chargers_accessible, 0.75, na.rm = TRUE),
+    p90 = quantile(chargers_accessible, 0.90, na.rm = TRUE),
+    max = max(chargers_accessible, na.rm = TRUE)
+  )
 

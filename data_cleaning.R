@@ -20,7 +20,7 @@ if (!dir.exists("data")) dir.create("data")
 
 
 refresh_data_chargers <-FALSE # set to TRUE to re-pull charger data
-refresh_data_acs <- TRUE # set to TRUE if to re-pull ACS data
+refresh_data_acs <- FALSE # set to TRUE if to re-pull ACS data
 
 #only pulls data if it hasn't already been cached locally
 
