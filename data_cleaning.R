@@ -18,13 +18,15 @@ library(sf)
 
 if (!dir.exists("data")) dir.create("data")
 
-refresh_data <- FALSE # set to TRUE if you want to re-pull data from API
+
+refresh_data_chargers <-FALSE # set to TRUE to re-pull charger data
+refresh_data_acs <- TRUE # set to TRUE if to re-pull ACS data
 
 #only pulls data if it hasn't already been cached locally
 
 if (file.exists("data/chargers_sf.rds") && 
     file.exists("data/chargers_buffers_1mi.rds") && 
-    !refresh_data)
+    !refresh_data_chargers)
 {
   chargers_sf <- read_rds("data/chargers_sf.rds")
   chargers_buffers_1mi <- read_rds("data/chargers_buffers_1mi.rds")
@@ -111,7 +113,7 @@ if (file.exists("data/chargers_sf.rds") &&
 
 # only pulls data if it isn't locally saved
 
-if (file.exists("data/acs_clean_sf.rds") &&  !refresh_data) {
+if (file.exists("data/acs_clean_sf.rds") &&  !refresh_data_acs) {
   acs_clean_sf <- readr::read_rds("data/acs_clean_sf.rds")
 } else {
   
@@ -133,20 +135,23 @@ if (file.exists("data/acs_clean_sf.rds") &&  !refresh_data) {
     pov_total        = "B17001_001",  # Poverty universe
     pov_below        = "B17001_002",  # Below poverty
     
-    lf_total         = "B23025_002",  # In labor force
+    lf_total         = "B23025_003",  # In labor force
     lf_unemployed    = "B23025_005",  # Unemployed
     
     occ_units_total  = "B25003_001",  # Occupied housing units
     occ_units_rent   = "B25003_003",  # Renter occupied
     
-    units_10plus     = "B25024_010",  # Units in large multifamily
+    units_total   = "B25024_001",  # Total housing units
+    units_10_19   = "B25024_007",  # 10 to 19 units
+    units_20_49   = "B25024_008",  # 20 to 49 units
+    units_50_plus = "B25024_009",   # 50+ units
     
     hh_vehicles_total = "B08201_001", # Households by vehicles available
     hh_zero_veh       = "B08201_002", # No vehicle available
     
     commute_total     = "B08301_001", # Workers by means of transportation to work
-    commute_car_alone = "B08301_002", # Car, truck, van, drove alone
-    commute_carpool   = "B08301_003"  # Car, truck, van, carpooled
+    commute_car_alone = "B08301_003", # Car, truck, van, drove alone
+    commute_carpool   = "B08301_004"  # Car, truck, van, carpooled
   )
   
   # helper function to pull state by state
@@ -197,7 +202,10 @@ if (file.exists("data/acs_clean_sf.rds") &&  !refresh_data) {
       occ_units_total  = occ_units_totalE,
       occ_units_rent   = occ_units_rentE,
       
-      units_10plus     = units_10plusE,
+      units_total      = units_totalE,
+      units_10_19      = units_10_19E,
+      units_20_49      = units_20_49E,
+      units_50_plus    = units_50_plusE,
       
       hh_vehicles_total = hh_vehicles_totalE,
       hh_zero_veh       = hh_zero_vehE,
@@ -223,7 +231,8 @@ if (file.exists("data/acs_clean_sf.rds") &&  !refresh_data) {
       renter_share  = if_else(occ_units_total > 0, occ_units_rent / occ_units_total, NA_real_),
       
       # large multifamily share (relative to occupied units)
-      multifam_share = if_else(occ_units_total > 0, units_10plus / occ_units_total, NA_real_),
+      units_10plus = units_10_19 + units_20_49 + units_50_plus,
+      multifam_share = if_else(units_total > 0, units_10plus / units_total, NA_real_),
       
       # zero vehicle households share
       zero_veh_share = if_else(hh_vehicles_total > 0, hh_zero_veh / hh_vehicles_total, NA_real_),
@@ -296,11 +305,33 @@ tract_charger_counts <- tract_charger_pairs %>%
 
 # join charger counts back to ACS data
 
+#Add charger count variables, and pop_density, converting sq meters to square miles 
+
 acs_with_access <- acs_clean_sf_5070 %>%
   left_join(tract_charger_counts, by = "GEOID") %>%
   mutate(
     chargers_accessible = replace_na(chargers_accessible, 0L),
-    has_charger  = chargers_accessible > 0
+    has_charger  = chargers_accessible > 0,
+    land_sq_miles = ALAND / 2.58999e6,
+    pop_density = if_else(land_sq_miles > 0, pop_total / land_sq_miles, NA_real_)
+  )
+
+# create charger density categories
+
+acs_with_access <- acs_with_access %>%
+  mutate(
+    charger_cat = case_when(
+      chargers_accessible == 0 ~ "None",
+      chargers_accessible <= 2 ~ "Very low",
+      chargers_accessible <= 7 ~ "Low–moderate",
+      chargers_accessible <= 19 ~ "High",
+      TRUE ~ "Very high"
+    ),
+    charger_cat = factor(
+      charger_cat,
+      levels = c("None", "Very low", "Low–moderate", "High", "Very high"),
+      ordered = TRUE
+    )
   )
 
 write_rds(acs_clean_sf, "data/acs_with_access.rds")
