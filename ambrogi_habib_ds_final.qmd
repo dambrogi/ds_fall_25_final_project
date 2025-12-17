@@ -1,0 +1,70 @@
+---
+title: "Title TBD"
+author: "Drew Ambrogi and Ameenah Habib "
+date: "December 20, 2025"
+output-file: ambrogi_habib_ds_final.html
+format:
+  html:
+    embed-resources: true        
+execute:
+  echo: true
+  message: false                     
+  warning: false                  
+---
+
+# Introduction
+
+(Insert Intro)
+
+# Dependencies
+
+The following packages are needed to execute the code in this document:
+
+```{r}
+library(tidyverse)
+library(httr)
+library(jsonlite)
+library(janitor)
+library(tidycensus)
+library(purrr)
+library(tigris)
+library(sf)
+```
+
+Additionally, a Census API key and an [NREL API key](https://developer.nrel.gov/signup) are required for this project. Both must be stored in your `.Renv`, with the NREL key stored as `NREL_API_KEY='yourkey'`.
+
+# Gathering and Cleaning the Data
+
+Because we are dealing with a large data set and several API calls, the following code is wrapped in if statements, such that API calls will only be made if the data is not already stored on locally. `refresh_data_chargers` and `refresh_data_acs` allow for a manual override. 
+
+Data is stored in the subdirectory `/data`, which is created if it doesn't exist already.
+
+```{r}
+if (!dir.exists("data")) dir.create("data")
+
+refresh_data_chargers <-FALSE # set to TRUE to re-pull charger data
+refresh_data_acs <- FALSE # set to TRUE if to re-pull ACS data
+
+```
+
+## Pulling the NREL Charger Data
+
+## Pulling the ACS Data and Geometries
+
+## Merging and Preparing the Data Sets for Analysis
+
+# Exploratory Analysis
+
+# Exploring Predictors of Charger Access
+
+## Decision Tree Model
+
+## LASSO Model
+
+## Discussion
+
+# Conclusion
+
+## Sources
+
+

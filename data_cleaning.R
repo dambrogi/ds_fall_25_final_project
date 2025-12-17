@@ -41,12 +41,12 @@ if (file.exists("data/chargers_sf.rds") &&
   base_url <- "https://developer.nrel.gov/api/alt-fuel-stations/v1.json"
   
   params <- list(
-    api_key   = nrel_key,
-    fuel_type = "ELEC",    # electric
-    access    = "public",  # public access_code
-    country   = "US",      # US stations
-    status    = "E",       # only available stations
-    limit     = "all"      # return all in one response
+    api_key = nrel_key,
+    fuel_type = "ELEC", # electric
+    access = "public", # public access_code
+    country = "US", # US stations
+    status = "E", # only available stations
+    limit  = "all" 
   )
   
   chargers_json <- GET(base_url, query = params)
@@ -123,35 +123,35 @@ if (file.exists("data/acs_clean_sf.rds") &&  !refresh_data_acs) {
   acs_survey <- "acs5"
   
   acs_vars <- c(
-    pop_total        = "B01003_001",  # Total pop
+    pop_total         = "B01003_001",  # Total pop
     
-    white_nh         = "B03002_003",  # White alone, not Hispanic/Latino
-    black_nh         = "B03002_004",  # Black alone, not Hispanic/Latino
-    asian_nh         = "B03002_006",  # Asian alone, not Hispanic/Latino
-    hispanic         = "B03002_012",  # Hispanic or Latino (any race)
+    white_nh          = "B03002_003",  # White alone, not Hispanic/Latino
+    black_nh          = "B03002_004",  # Black alone, not Hispanic/Latino
+    asian_nh          = "B03002_006",  # Asian alone, not Hispanic/Latino
+    hispanic          = "B03002_012",  # Hispanic or Latino (any race)
     
-    med_hh_income    = "B19013_001",  # Median hh income
+    med_hh_income     = "B19013_001",  # Median hh income
     
-    pov_total        = "B17001_001",  # Poverty universe
-    pov_below        = "B17001_002",  # Below poverty
+    pov_total         = "B17001_001",  # Poverty universe
+    pov_below         = "B17001_002",  # Below poverty
     
-    lf_total         = "B23025_003",  # In labor force
-    lf_unemployed    = "B23025_005",  # Unemployed
+    lf_total          = "B23025_003",  # In labor force
+    lf_unemployed     = "B23025_005",  # Unemployed
     
-    occ_units_total  = "B25003_001",  # Occupied housing units
-    occ_units_rent   = "B25003_003",  # Renter occupied
+    occ_units_total   = "B25003_001",  # Occupied housing units
+    occ_units_rent    = "B25003_003",  # Renter occupied
     
-    units_total   = "B25024_001",  # Total housing units
-    units_10_19   = "B25024_007",  # 10 to 19 units
-    units_20_49   = "B25024_008",  # 20 to 49 units
-    units_50_plus = "B25024_009",   # 50+ units
+    units_total       = "B25024_001",  # Total housing units
+    units_10_19       = "B25024_007",  # 10 to 19 units
+    units_20_49       = "B25024_008",  # 20 to 49 units
+    units_50_plus.    = "B25024_009",  # 50+ units
     
-    hh_vehicles_total = "B08201_001", # Households by vehicles available
-    hh_zero_veh       = "B08201_002", # No vehicle available
+    hh_vehicles_total = "B08201_001",  # Households by vehicles available
+    hh_zero_veh       = "B08201_002",  # No vehicle available
     
-    commute_total     = "B08301_001", # Workers by means of transportation to work
-    commute_car_alone = "B08301_003", # Car, truck, van, drove alone
-    commute_carpool   = "B08301_004"  # Car, truck, van, carpooled
+    commute_total     = "B08301_001",  # Workers by means of transportation to work
+    commute_car_alone = "B08301_003",  # Car, truck, van, drove alone
+    commute_carpool   = "B08301_004"   # Car, truck, van, carpooled
   )
   
   # helper function to pull state by state
@@ -164,7 +164,7 @@ if (file.exists("data/acs_clean_sf.rds") &&  !refresh_data_acs) {
       survey    = acs_survey,
       variables = acs_vars,
       geometry  = FALSE,   # will get from TIGRIS
-      output    = "wide"   # one column per variable, w e/m suffixes
+      output    = "wide"   
     )
   }
   
