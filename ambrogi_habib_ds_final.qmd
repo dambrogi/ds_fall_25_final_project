@@ -610,7 +610,7 @@ set.seed(20201020)
 lasso_df_split <- initial_split(data = lasso_df, prop = 0.75, strata = charger_cat)
 
 lasso_df_train <- training(x = lasso_df_split)
-lasso_df_test. <- testing(x = lasso_df_split)
+lasso_df_test <- testing(x = lasso_df_split)
 ```
 
 We define a multinomial LASSO model and estimate it using 5 fold cross validation with a 30 value tuning grid. We evaluate model performance using log loss, which accounts not only for whether the model predicts the correct category, but also how confident it is in its predictions. 
@@ -643,7 +643,7 @@ best_lambda <- select_best(
 )
 ```
 
-Notably, our optimal lambda is very small at 0.0000000001. This suggests our already doing a good job explaining charger categories require only minimal regularization.
+Notably, our optimal lambda is very small at 0.0000000001. This suggests our predictors are already doing a good job explaining charger categories require only minimal regularization.
 
 ```{r}
 best_lambda
