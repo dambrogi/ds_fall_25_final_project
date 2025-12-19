@@ -187,7 +187,7 @@ if (file.exists("data/acs_clean_sf.rds") &&  !refresh_data_acs) {
     units_total       = "B25024_001",  # Total housing units
     units_10_19       = "B25024_007",  # 10 to 19 units
     units_20_49       = "B25024_008",  # 20 to 49 units
-    units_50_plus.    = "B25024_009",  # 50+ units
+    units_50_plus     = "B25024_009",  # 50+ units
     
     hh_vehicles_total = "B08201_001",  # Households by vehicles available
     hh_zero_veh       = "B08201_002",  # No vehicle available
@@ -370,7 +370,12 @@ acs_with_access <- acs_with_access %>%
     )
   )
 
-write_rds(acs_clean_sf, "data/acs_with_access.rds")
+# remove unneded variables
+
+acs_with_access <- acs_with_access %>%
+  select(-NAME, -NAMELSAD, -LSAD, -STATE_NAME, -name,)
+
+write_rds(acs_with_access, "data/acs_with_access.rds")
 ```
 
 # Exploratory Analysis
