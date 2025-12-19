@@ -271,7 +271,7 @@ if (file.exists("data/acs_clean_sf.rds") &&  !refresh_data_acs) {
       renter_share  = if_else(occ_units_total > 0, occ_units_rent / occ_units_total, NA_real_),
       
       # large multifamily share (relative to occupied units)
-      units_10plus = units_10_19 + units_20_49 + units_50_plus,
+      units_10plus  = units_10_19 + units_20_49 + units_50_plus,
       multifam_share = if_else(units_total > 0, units_10plus / units_total, NA_real_),
       
       # zero vehicle households share
@@ -564,11 +564,11 @@ test_preds <- predict(rpart_fit, tree_model_df_test, type = "class") |>
 
 tree_model_metrics <- tibble(
   train_precision = precision(data = train_preds, truth = charger_cat, estimate = .pred_class)$.estimate,
-  train_recall = recall(data = train_preds, truth = charger_cat, estimate = .pred_class)$.estimate,
-  train_accuracy = accuracy(data = train_preds, truth = charger_cat, estimate = .pred_class)$.estimate,
-  test_precision = precision(data = test_preds, truth = charger_cat, estimate = .pred_class)$.estimate,
-  test_recall = recall(data = test_preds, truth = charger_cat, estimate = .pred_class)$.estimate,
-  test_accuracy = accuracy(data = test_preds, truth = charger_cat, estimate = .pred_class)$.estimate
+  train_recall    = recall(data = train_preds, truth = charger_cat, estimate = .pred_class)$.estimate,
+  train_accuracy  = accuracy(data = train_preds, truth = charger_cat, estimate = .pred_class)$.estimate,
+  test_precision  = precision(data = test_preds, truth = charger_cat, estimate = .pred_class)$.estimate,
+  test_recall     = recall(data = test_preds, truth = charger_cat, estimate = .pred_class)$.estimate,
+  test_accuracy   = accuracy(data = test_preds, truth = charger_cat, estimate = .pred_class)$.estimate
 )
 
 tree_model_metrics
@@ -584,9 +584,15 @@ rpart_fit |>
   extract_fit_parsnip() |>
   vip()
 ```
-(Add discussion about variable importance)
+In this model, population density dominates, indicating that density is the single most useful first cut for distinguishing between tracts with very low versus nonzero charger counts. This reflects the tree’s structure. It prioritizes variables that best split the data early, rather than distributing explanatory power across a collection of variables, as in the linear model. Density likely serves as a proxy for a group of conditions that matter for charger placement, including land use, commercial activity, and overall demand.
+
+After splitting on density, the tree places greater weight on multifamily housing share and commute by car share. This suggests that once a tract clears a basic density threshold, housing form and travel behavior help explain where chargers are more likely to be deployed within similarly dense areas. Variables that were important in the linear model, such as renter share and income, appear less prominent here likely because they overlap strongly with density and housing type and add less predictive power after the initial splits.
+
+The relatively small importance of most demographic variables suggests that the tree is capturing broad structural features of neighborhoods rather than narrow socioeconomic targeting. That said, the model places somewhat greater weight on a tract’s white population share. This likely reflects the role of race as a proxy for neighborhood type in a context shaped by longstanding residential segregation. White share may be picking up structural differences in neighborhood types, land use, and infrastructure that are only partially captured by variables like population density or multifamily housing share, rather than suggesting any direct discrimination in charger placement based on demographic characteristics.
 
 ## LASSO Model
+
+Our third model is a LASSO model specified as a multinomial logistic regression predicting charger density category (charger_cat). This approach allows us to examine how the importance of different tract characteristics varies across charger density levels, rather than estimating a single average relationship across the entire dataset. In addition, the LASSO penalty provides a robustness check by shrinking weaker or redundant predictors, helping highlight which variables remain important for distinguishing between charger density categories.
 
 ### Defining and Fitting the Model 
 
@@ -601,15 +607,13 @@ lasso_df <- acs_with_access %>%
 
 set.seed(20201020)
 
-# create a split object
 lasso_df_split <- initial_split(data = lasso_df, prop = 0.75, strata = charger_cat)
 
-# create the training and testing data
 lasso_df_train <- training(x = lasso_df_split)
-lasso_df_test  <- testing(x = lasso_df_split)
+lasso_df_test. <- testing(x = lasso_df_split)
 ```
 
-(Explain - cross validation, tuning grid, choice of metric)
+We define a multinomial LASSO model and estimate it using 5 fold cross validation with a 30 value tuning grid. We evaluate model performance using log loss, which accounts not only for whether the model predicts the correct category, but also how confident it is in its predictions. 
 
 ```{r}
 lasso_rec <- recipe(charger_cat ~ ., data = lasso_df_train) %>%
@@ -639,16 +643,14 @@ best_lambda <- select_best(
 )
 ```
 
-(Explain why best lambda is basically 0)
+Notably, our optimal lambda is very small at 0.0000000001. This suggests our already doing a good job explaining charger categories require only minimal regularization.
 
 ```{r}
 best_lambda
 
 autoplot(lasso_tuned)
 ```
-### Evaluating the Model
-
-Using the same metrics as the decision tree
+We then fit the model and store its predictions for evaluation.
 
 ```{r}
 final_lasso <- finalize_workflow(lasso_wf, best_lambda) %>%
@@ -660,65 +662,87 @@ lasso_train_preds <- predict(final_lasso, lasso_df_train, type = "class") %>%
 lasso_test_preds <- predict(final_lasso, lasso_df_test, type = "class") %>%
   bind_cols(lasso_df_test)
 
+```
+
+### Evaluating the Model
+
+```{r}
+
 lasso_model_metrics <- tibble(
   train_precision = precision(lasso_train_preds, truth = charger_cat, estimate = .pred_class)$.estimate,
   train_recall    = recall(lasso_train_preds, truth = charger_cat, estimate = .pred_class)$.estimate,
   test_precision  = precision(lasso_test_preds, truth = charger_cat, estimate = .pred_class)$.estimate,
   test_recall     = recall(lasso_test_preds, truth = charger_cat, estimate = .pred_class)$.estimate,
-  train_accuracy = accuracy(lasso_train_preds, truth = charger_cat, estimate = .pred_class)$.estimate,
-  test_accuracy  = accuracy(lasso_test_preds, truth = charger_cat, estimate = .pred_class)$.estimate
+  train_accuracy  = accuracy(lasso_train_preds, truth = charger_cat, estimate = .pred_class)$.estimate,
+  test_accuracy   = accuracy(lasso_test_preds, truth = charger_cat, estimate = .pred_class)$.estimate
 )
 
 lasso_model_metrics
 ```
+
+Though its performance is modest, results are consistent across the training and test sets, suggesting that the model is not overfitting. Notably, accuracy is similar to that of the decision tree model and to the R^2 from the linear specification. While these metrics are not directly comparable, their similarity suggests that we may be reaching the limits of what our selected predictors can explain about charger deployment.
+
 ### Evaluating Variable Importance
 
-Top coefficients by class:
+Because our dependent variable is categorical, the model estimates separate coefficients for each charger density category. The table below reports coefficient estimates for all predictors across the five charger density categories.
 
 ```{r}
 coef_tbl <- final_lasso %>%
   extract_fit_parsnip() %>%
-  tidy()
-
-top_coef_by_class <- coef_tbl %>%
+  tidy() %>%
+  select(class, term, estimate) %>%
   filter(term != "(Intercept)") %>%
   group_by(class) %>%
-  arrange(desc(abs(estimate)), .by_group = TRUE) 
-
-top_coef_by_class
+  arrange(desc(abs(estimate)), .by_group = TRUE) %>%
+  print(n=60)
 ```
 
-Survived variables by magnitude:
+These results largely reinforce the patterns we saw in the linear and tree based models, while adding more detail about how different variables matter at different points along the charger density spectrum. The clearest structure appears at the extremes. Tracts with no chargers are strongly characterized by lower renter share, lower multifamily housing share, lower income, and lower density, alongside higher commute by car share. In other words, places with predominantly single family housing, private vehicles, and private parking are systematically less likely to host public chargers. On the opposite end, very high charger density tracts show the mirror image of this pattern: higher renter share, higher income, more multifamily housing, and lower commute by car share. These are precisely the environments where demand for shared charging is highest and deployment is most feasible, which aligns closely with our earlier interpretations.
+
+The middle categories are notably less structured. For the low–moderate category in particular, most coefficients are reduced to zero, suggesting that the intermediate levels of charger density are harder to explain using tract level characteristics. 
+
+The plot below visualizes these coefficients, showing both the average and maximum coefficient across classes.
 
 ```{r}
-survived_vars <- coef_tbl %>%
+lasso_viz_df <- coef_tbl %>%
   filter(term != "(Intercept)") %>%
   group_by(term) %>%
-  summarize(
-    any_nonzero = any(estimate != 0),
-    n_classes_nonzero = sum(estimate != 0),
-    max_abs_coef = max(abs(estimate)),
+  summarise(
+    max_abs_coef  = max(abs(estimate)),
+    mean_abs_coef = mean(abs(estimate)),
     .groups = "drop"
   ) %>%
-  filter(any_nonzero) %>%
   arrange(desc(max_abs_coef))
 
-survived_vars %>%
-  slice_head(n = 15) %>%
-  ggplot(aes(x = reorder(term, max_abs_coef), y = max_abs_coef)) +
-  geom_col() +
+lasso_viz_long <- lasso_viz_df %>%
+  pivot_longer(
+    cols = c(max_abs_coef, mean_abs_coef),
+    names_to = "metric",
+    values_to = "value"
+  )
+
+lasso_viz <- ggplot(lasso_viz_long,
+       aes(x = reorder(term, value), y = value, fill = metric)) +
+  geom_col(position = "dodge") +
   coord_flip() +
   labs(
-    title = "LASSO survivors (non-zero coefficients)",
+    title = "LASSO coefficient magnitude by predictor",
     x = NULL,
-    y = "Max coefficient across classes"
+    y = "Absolute coefficient value",
+    fill = NULL
   ) +
   theme_minimal()
+
+lasso_viz
 ```
 
 ## Discussion
 
+(Add discussion)
+
 # Conclusion
+
+(Add conclusion)
 
 
 
