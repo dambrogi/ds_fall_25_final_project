@@ -2,7 +2,7 @@
 title: "Title TBD"
 author: "Drew Ambrogi and Ameenah Habib"
 date: "December 20, 2025"
-output-file: ambrogi_habib_ds_final.html
+output-file: index.html
 format:
   html:
     embed-resources: true
