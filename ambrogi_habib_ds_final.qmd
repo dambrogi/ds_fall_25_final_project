@@ -1,12 +1,12 @@
 ---
 title: "Title TBD"
-author: "Drew Ambrogi and Ameenah Habib "
+author: "Drew Ambrogi and Ameenah Habib"
 date: "December 20, 2025"
 output-file: ambrogi_habib_ds_final.html
 format:
   html:
     embed-resources: true
-   pdf: default
+  pdf: default
 execute:
   echo: true
   message: false                     
@@ -400,10 +400,13 @@ acs_with_access %>%
 
 (Explain choice of models)
 
-## Decision Tree Model
+## Linear Model 
 
-###Defining and Fitting the Model
-First we select a limited amount of variables as potential predictors, and eliminate other variables that may be duplicative or irrelevant. 
+We start with a simple OLS model. Here we opt for log chargers as our dependent variable, due to the long tail of in the distribution of charger counts. Because we are interested in the relative importance of our predictors, not their specific coefficients, we opt to normalise our variables for a cleaner comparison. 
+
+### Defining and Fitting the Model
+
+First we select a limited amount of variables as potential predictors, and eliminate other variables that may be duplicative or irrelevant. This collection of predictors is used across all three models. 
 
 ```{r}
 predictors <- c(
@@ -422,7 +425,97 @@ predictors <- c(
 )
 ```
 
-Then we create a dataframe for use with this model, dropping grometries which are not needed for this analysis. We drop census tracks with NA values. We then split the data into testing and training sets.
+Then we create a clean dataframe, dropping geometry, and logging the count of chargers. We then define and fit the model. 
+
+```{r}
+lm_df <- acs_with_access %>%
+  sf::st_drop_geometry() %>%
+  mutate(log_chargers = log1p(chargers_accessible)) %>%
+  select(log_chargers, all_of(predictors)) %>%
+  drop_na()
+
+lm_rec_std <- recipe(log_chargers ~ ., data = lm_df) %>%
+  step_normalize(all_predictors())
+
+lm_spec <- linear_reg() %>%
+  set_engine("lm")
+
+lm_wf_std <- workflow() %>%
+  add_recipe(lm_rec_std) %>%
+  add_model(lm_spec)
+
+lm_fit_std <- fit(lm_wf_std, data = lm_df)
+```
+
+### Evaluating the Model
+
+Because we use the count of chargers as our dependent variable with this model, we can't evaluate accuracy, recall, and precision the way we do with our decision tree and LASSO models later. However, we can look at the model's R^2 to roughtly understand how much of the variation in charger counts our model accounts for. 
+
+```{r}
+glance(lm_fit_std) %>%
+  select(r.squared, adj.r.squared, nobs)
+```
+We see that the model captured about 41% of the variation in charger counts. Substantial, but low enough to suggest there are other variables we aren't accounting for that play a significant role in determining counts. 
+
+### Evaluating Variable Importance
+
+To evaluate the importance of our predictors, we look at their coefficients. Since they have been normalized, we can easily compare them. 
+
+```{r}
+lm_coef_table_std <- tidy(lm_fit_std) %>%
+  filter(term != "(Intercept)") %>%
+  mutate(
+    signif = case_when(
+      p.value < 0.001 ~ "***",
+      p.value < 0.01 ~ "**",
+      p.value < 0.05 ~ "*",
+      p.value < 0.1 ~ "x",
+      TRUE ~ ""
+    ),
+    estimate = round(estimate, 3),
+    std.error = round(std.error, 3),
+    p.value = round(p.value, 3)
+  ) %>%
+  arrange(desc(abs(estimate))) %>%
+  select(term, estimate, std.error, p.value, signif)
+
+lm_coef_table_std
+```
+With the exception of `pct_white_nh`, the percentage of the tract's population which is white (Non-Hispanic/Latino), all of our predictors are highly significant. 
+
+A simple visualization makes the comparison more clear:
+```{r}
+plot_df_mag <- tidy(lm_fit_std) %>%
+  filter(term != "(Intercept)") %>%
+  mutate(
+    mag = abs(estimate),
+  ) %>%
+  arrange(mag) %>%
+  mutate(term = factor(term, levels = term))
+
+lm_vi_plot <- ggplot(plot_df_mag, aes(x = mag, y = term)) +
+  geom_col() +
+  labs(
+    x = "Absolute standardized coefficient",
+    title = "Standardized OLS Model",
+    subtitle = "Variable importance by magnitude"
+  ) 
+
+lm_vi_plot
+```
+(Importantly, this shows the absolute value of the magintude of each coefficient, though some variables had a negative impact on number of available chargers.)
+
+The variable importance results suggest that charger deployment is being driven less by simple population metrics and more by housing type, travel behavior, and market conditions. The strongest positive predictors are renter share, median household income, and multifamily housing share. This pattern is intuitive. Renters and residents of multifamily buildings are less likely to have access to private, at home charging, which increases demand for public or shared chargers. At the same time, higher income areas are more likely to attract early infrastructure investment, either because residents are more likely to own EVs or because these neighborhoods have greater resources to support deployment.
+
+Commute by car share plays a strongly negative role, which is consistent with the fact that our analysis focuses only on public chargers. In areas where a larger share of residents commute by car, households are more likely to have access to private parking and private chargers, reducing reliance on public infrastructure. Population density plays a smaller and negative role, suggesting that density alone does not guarantee more chargers. This makes sense, considering that in very dense urban neighborhoods, limited curb space, older infrastructure, and more complex permitting constraints can make deployment more difficult. This helps explain why both high commute by car share and high zero vehicle share are associated with fewer public chargers. On one end are tracts where private vehicles, parking, and home charging are common. On the other are dense urban tracts with fewer cars but greater physical and regulatory barriers. In both cases, demand for or feasibility of public chargers are lower.
+
+The smaller effects for race, poverty, and related variables are harder to interpret directly and likely reflect broader neighborhood characteristics correlated with housing form, land use, and infrastructure conditions rather than intentional targeting. 
+
+## Decision Tree Model
+
+###Defining and Fitting the Model
+
+We create a dataframe for use with this model, dropping grometries which are not needed for this analysis, and selecting the same set of predictors used in the previous model. We drop census tracks with NA values. We then split the data into testing and training sets.
 
 ```{r}
 tree_model_df <- acs_with_access %>%
@@ -463,6 +556,9 @@ rpart_fit <- tree_wf |>
 We evaluate our model using the testing set, calculating precision, recall, and accuracy for both sets.
 
 ```{r}
+train_preds <- predict(rpart_fit, tree_model_df_train, type = "class") |> 
+  bind_cols(tree_model_df_train)
+
 test_preds <- predict(rpart_fit, tree_model_df_test, type = "class") |> 
   bind_cols(tree_model_df_test)
 
@@ -477,6 +573,8 @@ tree_model_metrics <- tibble(
 
 tree_model_metrics
 ```
+(Add evaluation)
+
 ### Evaluating Variable Importance
 
 We examine variable importance from the fitted classification tree to understand which features the model relies on most when splitting observations.
