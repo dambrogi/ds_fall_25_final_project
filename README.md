@@ -55,6 +55,7 @@ It includes the following variables:
 | chargers_accessible | numeric | Number of chargers accessible (1 mile buffer) |
 | geometry | sfc_MULTIPOLYGON |  |
 | has_charger | logical | True if chargers > 0 for the tract, false if no charger available |
+| charger_cat | ordered factor | Charger density category: "None", "Very low", "Low–moderate", "High", or "Very high" |
 
 
 Chargers limited to public chargers only. 

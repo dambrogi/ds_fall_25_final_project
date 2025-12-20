@@ -1,0 +1,33 @@
+project:
+  type: website
+  render:
+  - index.qmd
+  - codebook.qmd
+  - assembly.qmd
+  - main.qmd
+
+title: "Exploring Predictors of EV Charger Access"
+author: "Drew Ambrogi and Ameenah Habib"
+date: "December 20, 2025"
+
+website:
+  navbar:
+    left:
+      - href: index.qmd
+        text: Introduction
+      - href: codebook.qmd
+        text: Codebook and Dependencies
+      - href: assembly.qmd
+        text: Data Assembly and Cleaning
+      - href: main.qmd
+        text: Exploratory Analysis and Modeling
+
+format:
+  html:
+    embed-resources: true
+    toc: true
+    
+execute:
+  echo: true
+  message: false
+  warning: false

@@ -1,28 +1,44 @@
+---
+title: "Data Assembly and Cleaning"
+toc: true
+---
+
+## Data Sources
+
+Our EV charger location data comes from the National Renewable Energy Laboratory's (NREL) [alternative fuel stations database API](https://developer.nrel.gov/docs/transportation/alt-fuel-stations-v1/). The publicly available database lists all public and private EV chargers in the U.S, including their latitude and longitude. We supplement this data with demographic variables from the 5 year American Community Survey, accessed via the Census API via tidycensus. 
+
+## Pulling the NREL Charger Data
+
+```{r}
+#load libraries
 library(tidyverse)
 library(httr)
 library(jsonlite)
 library(janitor)
 library(tidycensus)
-library(purrr)
 library(tigris)
 library(sf)
+```
 
+Because we are dealing with a large data set and several API calls, the following code is wrapped in if statements, such that API calls will only be made if the data is not already stored on locally. `refresh_data_chargers` and `refresh_data_acs` allow for a manual override. 
 
-# for this to work you need a census api key and NREL api key in your .Renviron
-# get an NREL API key here: https://developer.nrel.gov/signup
-# open your .Renv with `file.edit("~/.Renviron")`
-# store as NREL_API_KEY='yourkey' (with ' ' on either side)
-# save the .Renviron file and reboot R before proceeding
+Data is stored in the subdirectory `/data`, which is created if it doesn't exist already.
 
-#create data directory for caching 
-
+```{r}
 if (!dir.exists("data")) dir.create("data")
-
 
 refresh_data_chargers <-FALSE # set to TRUE to re-pull charger data
 refresh_data_acs <- FALSE # set to TRUE if to re-pull ACS data
 
-#only pulls data if it hasn't already been cached locally
+```
+
+The code block below loads the API key and constructs a GET call to collect data on all public AV chargers in the US. In addition to their locations, the query also selects several variables about the chargers, which we ultimately did not end up using in this analysis. 
+
+After confirming a successful response, the incoming JSON is parsed and converted into a dataframe, chargers. The latitude and longitude of each charger are then used to create point geometries. The coordinate reference system is reprojected to EPSG:5070 to allow distance calculations in meters. Buffers are applied around each charger point to account for the fact that chargers can serve nearby census tracts even when they do not fall directly within tract boundaries. We use a 1-mile buffer to define access, consistent with [NEVI guidelines](https://www.ibtta.org/sites/default/files/documents/Advocacy/IBTTA-NEVI-Program-Guide-FINAL-2022-0328.pdf) that place corridor fast chargers within 1 mile of a highway. Anchoring the buffer to this standard avoids an arbitrary cutoff and makes the access measure easier to interpret.
+
+The resulting dataframe is then stored locally for future access. 
+
+```{r}
 
 if (file.exists("data/chargers_sf.rds") && 
     file.exists("data/chargers_buffers_1mi.rds") && 
@@ -33,11 +49,9 @@ if (file.exists("data/chargers_sf.rds") &&
 } else {
   
   #Read API Key from env file
-  
   nrel_key <- Sys.getenv("NREL_API_KEY")
   
   # Build and Send Request
-  
   base_url <- "https://developer.nrel.gov/api/alt-fuel-stations/v1.json"
   
   params <- list(
@@ -56,9 +70,7 @@ if (file.exists("data/chargers_sf.rds") &&
   
   #parse the response
   chargers_text_json <- content(chargers_json, as = "text")
-  
   chargers_parsed_json <- fromJSON(chargers_text_json, flatten = TRUE)
-  
   chargers <- as_tibble(chargers_parsed_json$fuel_stations)
   
   chargers <- chargers |>
@@ -86,9 +98,7 @@ if (file.exists("data/chargers_sf.rds") &&
       open_date
     )
   
-  
   # turn latitude and longitude into geometries
-  
   chargers_sf <- chargers |>
     # drop rows with missing coords
     filter(!is.na(latitude), !is.na(longitude)) |>
@@ -103,22 +113,29 @@ if (file.exists("data/chargers_sf.rds") &&
   chargers_buffers_1mi <- st_buffer(chargers_sf, dist = 1609.34) #creates one mile buffers
   
   #cache locally to avoid repeat pulls
-  
   write_rds(chargers_sf, "data/chargers_sf.rds")
   write_rds(chargers_buffers_1mi, "data/chargers_buffers_1mi.rds")
-  
 }
+```
 
-# Pulling census tract data
+## Pulling the ACS Data and Tract Geometries
 
-# only pulls data if it isn't locally saved
+We then construct a tract-level demographic dataset from the 2023 ACS 5-year survey to provide additional demographic information about each census tract. Again we check for a previous local version of the dataframe before rebuilding the data. 
 
+We pull a set of pre-selected variables that we believe will be both interesting and relevant to describing which tracts have charger access. They seek to capture information about the built environment, focusing on housing desity and ownership vs. renting, as well as demographic information, and behaviorial information as it relates to car use. While there are many additional variables that could plausibly influence charger placement, this set provides a focused and interpretable starting point.
+
+A full list of all variables is included in the [Codebook and Dependencies](codebook.qmd) section.
+
+In the script below, we identify our variables, and construct a helper function to pull tract level data for each state. We use `library(purrr)` to run the function over a vector of 50 states plus DC. The data is then cleaned, and additional variables are calculated, including race and ethnicity shares, as well as others related to urban form and car use. 
+
+We then use a similar process to pull each geometry with `library(tigris)`. These geometries are joined to the ACS dataframe by `GEOID`, and the resulting dataframe is stored locally for future access. 
+
+```{r}
 if (file.exists("data/acs_clean_sf.rds") &&  !refresh_data_acs) {
   acs_clean_sf <- readr::read_rds("data/acs_clean_sf.rds")
 } else {
   
-  # define variables
-  
+  #constructing query and defining variables
   acs_year <- 2023
   acs_survey <- "acs5"
   
@@ -144,7 +161,7 @@ if (file.exists("data/acs_clean_sf.rds") &&  !refresh_data_acs) {
     units_total       = "B25024_001",  # Total housing units
     units_10_19       = "B25024_007",  # 10 to 19 units
     units_20_49       = "B25024_008",  # 20 to 49 units
-    units_50_plus.    = "B25024_009",  # 50+ units
+    units_50_plus     = "B25024_009",  # 50+ units
     
     hh_vehicles_total = "B08201_001",  # Households by vehicles available
     hh_zero_veh       = "B08201_002",  # No vehicle available
@@ -155,7 +172,6 @@ if (file.exists("data/acs_clean_sf.rds") &&  !refresh_data_acs) {
   )
   
   # helper function to pull state by state
-  
   get_state_acs <- function(state_abbr) {
     get_acs(
       geography = "tract",
@@ -169,7 +185,6 @@ if (file.exists("data/acs_clean_sf.rds") &&  !refresh_data_acs) {
   }
   
   # get list of states, pull ACS for each with purr , dropping territories
-  
   data("fips_codes")
   
   states_vec <- unique(fips_codes$state)
@@ -178,7 +193,6 @@ if (file.exists("data/acs_clean_sf.rds") &&  !refresh_data_acs) {
   acs_tract_raw <- purrr::map_dfr(states_vec, get_state_acs)
   
   # cleaning the data
-  
   acs_clean <- acs_tract_raw %>%
     transmute(
       GEOID,
@@ -231,7 +245,7 @@ if (file.exists("data/acs_clean_sf.rds") &&  !refresh_data_acs) {
       renter_share  = if_else(occ_units_total > 0, occ_units_rent / occ_units_total, NA_real_),
       
       # large multifamily share (relative to occupied units)
-      units_10plus = units_10_19 + units_20_49 + units_50_plus,
+      units_10plus  = units_10_19 + units_20_49 + units_50_plus,
       multifam_share = if_else(units_total > 0, units_10plus / units_total, NA_real_),
       
       # zero vehicle households share
@@ -246,7 +260,6 @@ if (file.exists("data/acs_clean_sf.rds") &&  !refresh_data_acs) {
     )
   
   # get geometries for tracts from TIGRIS
-  
   get_state_tract_shapes <- function(state_abbr) {
     tracts(
       state = state_abbr,
@@ -258,16 +271,20 @@ if (file.exists("data/acs_clean_sf.rds") &&  !refresh_data_acs) {
   tract_shapes <- purrr::map_dfr(states_vec, get_state_tract_shapes)
   
   # join geometries and demographic info 
-  
   acs_clean_sf <- tract_shapes %>%
     left_join(acs_clean, by = "GEOID")
   
   write_rds(acs_clean_sf, "data/acs_clean_sf.rds")
-  
 }
+```
 
+## Merging and Preparing the Data Sets for Analysis
 
-# Merging the datasets
+In the next step we confirm that both datasets are set to the same CRS. 
+
+Then we perform as spatial join of the buffered charger points to the census tracts via `st_intersects`. This leaves us with one row for each tract that intersects with each charger. Because some chargers intersect with multiple tracts, and many tracts overlap with multiple chargers, the resulting dataframe has many duplicates. What we are left with is a dataframe of tract-charger pairs. Each row is a census tract, repeated for every charger that intersects with its boundaries. Using `left = TRUE`, tracts that do not intersect any buffer are retained with missing charger fields.
+
+```{r}
 
 acs_clean_sf_5070 <- st_transform(acs_clean_sf, st_crs(chargers_buffers_1mi)) #sets to same CRS
 
@@ -292,21 +309,24 @@ tract_charger_pairs <- st_join(
   left = TRUE
 )
 
+```
+
+We then condense this dataframe counting the number of unique chargers that intersect with each tract. 
+
+Then we join these counts back to the ACS dataframe, specifying that tracts with no `chargers_accessible` value are assigned 0, as an integer. In the process, we create three additional variables: `has_charger`, a logical variable denoting any charger access, and `land_sq_miles` which we use to calculate `pop_density`. 
+
+```{r}
 #extract charger counts for each tract
-
-
 tract_charger_counts <- tract_charger_pairs %>%
   st_drop_geometry() %>%       
   group_by(GEOID) %>%
-  summarise(
+  summarize(
     chargers_accessible = n_distinct(id, na.rm = TRUE),
     .groups = "drop"
   )
 
 # join charger counts back to ACS data
-
 #Add charger count variables, and pop_density, converting sq meters to square miles 
-
 acs_with_access <- acs_clean_sf_5070 %>%
   left_join(tract_charger_counts, by = "GEOID") %>%
   mutate(
@@ -316,8 +336,12 @@ acs_with_access <- acs_clean_sf_5070 %>%
     pop_density = if_else(land_sq_miles > 0, pop_total / land_sq_miles, NA_real_)
   )
 
-# create charger density categories
+```
 
+We then create an ordered factor variable to create groups based on charger density. The rationale for this is provided in the "Exploratory Analysis" section of our main analysis. Finally we drop unneeded variables and store the final dataframe locally. 
+
+```{r}
+# create charger density categories
 acs_with_access <- acs_with_access %>%
   mutate(
     charger_cat = case_when(
@@ -334,23 +358,10 @@ acs_with_access <- acs_with_access %>%
     )
   )
 
-write_rds(acs_clean_sf, "data/acs_with_access.rds")
+# remove unneded variables
 
-#test that it worked with a heatmap based of tracts based on count of chargers
-#limited to continental us
+acs_with_access <- acs_with_access %>%
+  select(-NAME, -NAMELSAD, -LSAD, -STATE_NAME, -name,)
 
-test_map <- acs_with_access |>
-  filter(!STATEFP %in% c("02", "15", "72")) |>
-  ggplot() +
-  geom_sf(aes(fill = chargers_accessible), color = NA) +
-  scale_fill_viridis_c(option = "plasma", na.value = "grey90") +
-  coord_sf() +
-  labs(
-    title = "Public EV chargers within 1 mile of each census tract",
-    fill  = "Chargers"
-  ) +
-  theme_minimal()
-
-test_map
-
-names(acs_with_access)
+write_rds(acs_with_access, "data/acs_with_access.rds")
+```

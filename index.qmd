@@ -1,0 +1,52 @@
+---
+title: "Introduction"
+toc: true
+---
+
+Electric vehicles (EVs) usage is on the rise as more Americans become more aware of the state of climate change and become more environmentally conscious. However, this transition is only effective if there is appropriate infrastructure for it. There must be enough charging stations accessible to the public for this to be both an effective and efficient transition. Furthermore, as this transition is in the early stages, it is critical to create an infrastructure that is fair and equal amongst different socioeconomic areas across the United States. 
+
+This project aims to look into a simple but important question: Are public EV charging stations fairly distributed across different kinds of neighborhoods, or are some communities being left behind? Charger locations in the United States are shaped by a mix of forces including market incentives, local zoning rules, corporate partnerships, and state and federal subsidies.  As a result, the geographic pattern of EV chargers may reflect structural advantages rather than purely consumer needs. This project will examine whether those forces collectively produce unequal access to charging.
+
+To investigate this issue, we combine data from two primary sources. First, we use the U.S. Department of Energy’s public API, which provides detailed information on the locations and types of public EV charging stations nationwide. Second, we merge this information with census-tract-level demographic and housing data from the American Community Survey, including measures of income, race, population size, and commuter patterns. Combined, this creates a comprehensive dataset that allows us to analyze charger availability in neighborhoods across the country and differentiate between different socioeconomic conditions.
+
+We then use visualizations do some precursory exploration of the dataset, including mapping certain regionas and exploring how charger access interacts with select demographic  characteristics.
+
+Building on this exploratory work, we estimate a series of models to identify which neighborhood characteristics are most strongly associated with charger access. We begin with a standardized linear regression to assess relative predictor importance for charger counts, followed by a classification decision tree to capture nonlinear relationships and threshold effects. Finally, we fit a multinomial LASSO model to examine how predictors differ across charger density categories while reducing noise from correlated variables. Across these approaches, we use techniques including feature engineering, normalization, cross validation, regularization, model comparison, and variable importance analysis. Together, these methods allow us to move beyond simple correlations and better understand the structural factors shaping where public EV charging infrastructure is deployed.
+
+The analysis proceeds in three parts, each documented below. 
+
+The recommended reading order is:
+1. [Codebook and Dependencies](codebook.qmd)
+2. [Data Assembly and Cleaning](assembly.qmd)
+3. [Exploratory Analysis and Modeling](main.qmd)
+
+---
+
+### Codebook and Dependencies
+
+This section explains the libraries used and other steps needed to recreate our analysis. It also contains an overview of all variables in our main data set. 
+
+➡️ **[Codebook and Dependencies](codebook.qmd)**
+
+---
+
+### Data Assembly and Cleaning
+
+This section walks through the steps we took to assemble our main dataset. 
+
+It explains how raw inputs are transformed into the final tract-level dataset used in exploratory analysis and modeling.
+
+➡️ **[Data Assembly and Cleaning](assembly.qmd)**
+
+---
+
+### Exploratory Analysis and Modeling
+
+This section presents descriptive analysis, visual exploration, and statistical modeling results. It examines patterns in charger access and evaluates which factors are most strongly associated with observed deployment outcomes.
+
+Modeling choices, diagnostics, and interpretation are discussed in detail.
+
+➡️ **[Exploratory Analysis and Modeling](main.qmd)**
+
+
+

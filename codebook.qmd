@@ -1,0 +1,80 @@
+---
+title: "Codebook and Dependencies"
+toc: true
+---
+
+# Dependencies
+
+The following packages are needed to execute the code in this document:
+
+```{r}
+library(tidyverse)
+library(httr)
+library(jsonlite)
+library(janitor)
+library(tidycensus)
+library(tigris)
+library(sf)
+library(rpart)
+library(tidymodels)
+library(rpart.plot)
+library(vip)
+```
+
+Additionally, a Census API key and an [NREL API key](https://developer.nrel.gov/signup) are required for this project. Both must be stored in your `.Renv`, with the NREL key stored as `NREL_API_KEY='yourkey'`.
+
+# Codebook
+
+The main dataset used in our analysis is the dataframe `acs_with_access`. 
+
+It contains all census tracts in the US (including DC, excluding PR and other territories), and the variables listed in the table below. 
+
+Variables related to charger accessibility include only public EV chargers. A charger is considered accessible if it is located within one mile of a census tract boundary.
+
+| Variable | Format | Meaning |
+|--------------------------|-----------------------|-----------------------|
+| STATEFP | character | State FIPS |
+| COUNTYFP | character | County FIPS |
+| TRACTCE | character | Tract code |
+| GEOIDFQ | character | Fully qualified tract geo identifier |
+| GEOID | character | Census tract geo identifier |
+| STUSPS | character | State postal code |
+| ALAND | numeric | Tract land area in square meters |
+| AWATER | numeric | Tract water area in square meters |
+| pop_total | numeric | Total tract pop |
+| white_nh | numeric | White non Hispanic / Latino pop |
+| black_nh | numeric | Black non Hispanic / Latino pop |
+| asian_nh | numeric | Asian non Hispanic / Latino pop |
+| hispanic | numeric | Hispanic or Latino (any race) pop |
+| med_hh_income | numeric | Median household income |
+| pov_total | numeric | Poverty universe |
+| pov_below | numeric | Pop below poverty line |
+| lf_total | numeric | Labor force total |
+| lf_unemployed | numeric | Unemployed pop |
+| occ_units_total | numeric | Total occupied housing units |
+| occ_units_rent | numeric | Total renter occupied housing units |
+| units_10_19 | numeric | Units in 10 to 19 unit buildings |
+| units_20_49 | numeric | Units in 20 to 29 unit buildings |
+| units_50_plus | numeric | Units in 50+ unit buildings |
+| units_10plus | numeric | Total units in large multifamily |
+| hh_vehicles_total | numeric | Houshold vehicles universe |
+| hh_zero_veh | numeric | Households with 0 vehicle access |
+| commute_total | numeric | Commuter universe |
+| commute_car_alone | numeric | Pop that commute in car alone |
+| commute_carpool | numeric | Pop that commutes (carpool) |
+| pct_white_nh | numeric | White nh share |
+| pct_black_nh | numeric | Black nh share |
+| pct_asian_nh | numeric | Asian nh share |
+| pct_hispanic | numeric | Hispanic (any race) share |
+| pov_rate | numeric | Poverty rate |
+| unemprate | numeric | Unemployment rate |
+| renter_share | numeric | Renter share |
+| multifam_share | numeric | Multifamily housing share |
+| zero_veh_share | numeric | Zero vehicle access share |
+| commute_car_share | numeric | Car commuter share |
+| land_sq_miles | numeric | Tract land area in sq. miles |
+| pop_density | numeric | Population density (pop_total/land_sq_miles) |
+| chargers_accessible | numeric | Number of chargers accessible (1 mile buffer) |
+| has_charger | logical | True if chargers \> 0 for the tract, false if no charger available |
+| charger_cat | ordered factor | Charger density category: "None" (0), "Very low" (1-2), "Low–moderate" (3-6), "High" (7-18), or "Very high" (18+) |
+| geometry | sfc_MULTIPOLYGON | Tract geometry (polygon) |
