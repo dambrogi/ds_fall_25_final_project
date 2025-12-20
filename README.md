@@ -10,10 +10,10 @@ This project examines whether public EV charging stations are equitably distribu
 
 The project is split into four parts, and we recommend viewing them in the following order:
 
-1.  [Introduction](index.qmd) 
-2.  [Codebook and Dependencies](codebook.qmd)
-3.  [Data Assembly and Cleaning](assembly.qmd)
-4.  [Exploratory Analysis and Modeling](main.qmd)
+1.  [Introduction](https://dambrogi.github.io/ds_fall_25_final_project/) 
+2.  [Codebook and Dependencies](https://dambrogi.github.io/ds_fall_25_final_project/codebook.html)
+3.  [Data Assembly and Cleaning](https://dambrogi.github.io/ds_fall_25_final_project/assembly.html)
+4.  [Exploratory Analysis and Modeling](https://dambrogi.github.io/ds_fall_25_final_project/main.html)
 
 ### Repository Contents
 
