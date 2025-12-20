@@ -15,7 +15,7 @@ website:
   navbar:
     left:
       - href: index.qmd
-        text: Introduction
+        text: Introduction (Home)
       - href: codebook.qmd
         text: Codebook and Dependencies
       - href: assembly.qmd

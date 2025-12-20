@@ -1,67 +1,30 @@
-# Intro to Data Science - Final Project - Drew Ambrogi and Ameenah Habib
+# Exploring Predictors of EV Charger Access
 
-## Main Dataset
+*Intro to Data Science (Fall 2025) Final Project*
 
-The main dataset is the df `acs_with_access`. 
+*By Drew Ambrogi and Ameenah Habib*
 
-It contains all census tracts in the US (including DC, excluding PR and other territories).
+### Overview
 
-It includes the following variables:
+This project examines whether public EV charging stations are equitably distributed across U.S. neighborhoods or whether some communities are systematically left behind. Using charger location data pulled via web APIs from NREL, combined with census-tract demographic and housing data, we apply geospatial analysis and supervised machine learning models to assess how neighborhood characteristics shape access to public charging infrastructure.
 
-| Variable | Format | Meaning |
-|----------|---------|---------|
-| STATEFP | character | State FIPS |
-| COUNTYFP | character | County FIPS |
-| TRACTCE | character | Tract code |
-| GEOIDFQ | character |  |
-| GEOID | character |  |
-| NAME | character |  |
-| NAMELSAD | character |  |
-| STUSPS | character | State postal code |
-| NAMELSADCO | character |  |
-| STATE_NAME | character |  |
-| LSAD | character |  |
-| ALAND | numeric |  |
-| AWATER | numeric |  |
-| name | character |  |
-| pop_total | numeric | Total tract pop |
-| white_nh | numeric | White nh pop |
-| black_nh | numeric | Black nh pop |
-| asian_nh | numeric | Asian nh pop |
-| hispanic | numeric | Hispanic Latino pop|
-| med_hh_income | numeric |  |
-| pov_total | numeric | Poverty universe |
-| pov_below | numeric | Pop below poverty line |
-| lf_total | numeric | Labor force total |
-| lf_unemployed | numeric | Unemployed pop |
-| occ_units_total | numeric | Total occupied housing units |
-| occ_units_rent | numeric | Total renter occupied housing units |
-| units_10plus | numeric | Total units in large multifamily |
-| hh_vehicles_total | numeric | Houshold vehicles universe  |
-| hh_zero_veh | numeric | Households with 0 vehicle access |
-| commute_total | numeric | Commuter universe |
-| commute_car_alone | numeric | Pop that commute in car alone |
-| commute_carpool | numeric | Pop that commutes (carpool) |
-| pct_white_nh | numeric |  |
-| pct_black_nh | numeric |  |
-| pct_asian_nh | numeric |  |
-| pct_hispanic | numeric |  |
-| pov_rate | numeric |  |
-| unemprate | numeric |  |
-| renter_share | numeric |  |
-| multifam_share | numeric |  |
-| zero_veh_share | numeric |  |
-| commute_car_share | numeric |  |
-| chargers_accessible | numeric | Number of chargers accessible (1 mile buffer) |
-| geometry | sfc_MULTIPOLYGON |  |
-| has_charger | logical | True if chargers > 0 for the tract, false if no charger available |
-| charger_cat | ordered factor | Charger density category: "None", "Very low", "Low–moderate", "High", or "Very high" |
+The project is split into four parts, and we recommend viewing them in the following order:
 
+1.  [Introduction](index.qmd) 
+2.  [Codebook and Dependencies](codebook.qmd)
+3.  [Data Assembly and Cleaning](assembly.qmd)
+4.  [Exploratory Analysis and Modeling](main.qmd)
 
-Chargers limited to public chargers only. 
+### Repository Contents
 
+|File / Directory|Description|
+|---|---|
+|`docs/`|Rendered Quarto website output used for GitHub Pages deployment|
+|`.gitignore`|.gitignore file excluding local data and other unneeded files|
+|`README.md`|This document|
+|`_quarto.yml`|Quarto project configuration file for pages deployment|
+|`index.qmd`|Landing page and introduction source|
+|`assembly.qmd`|Data assembly and cleaning project page source|
+|`codebook.qmd`|Codebook and dependencies source|
+|`main.qmd`|Main analysis and modeling source|
 
-Chargers codebook: https://afdc.energy.gov/data_download/historical_stations_format 
-
-
-Justification for 1 Mile buffer: https://www.ibtta.org/sites/default/files/documents/Advocacy/IBTTA-NEVI-Program-Guide-FINAL-2022-0328.pdf

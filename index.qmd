@@ -1,7 +1,9 @@
 ---
-title: "Introduction"
+title: "Exploring Predictors of EV Charger Access"
 toc: true
 ---
+
+# Introduction
 
 Electric vehicle (EV) usage is on the rise as more Americans become more aware of the state of climate change and become more environmentally conscious. However, this transition is only effective if there is appropriate infrastructure for it. There must be enough charging stations accessible to the public for this to be both an effective and efficient transition. Furthermore, as this transition is in the early stages, it is critical to create an infrastructure that is fair and equal among different socioeconomic areas across the United States.
 
@@ -15,7 +17,11 @@ Building on this exploratory work, we estimate a series of models to identify wh
 
 The analysis proceeds in three parts, each documented below.
 
-The recommended reading order is: 1. [Codebook and Dependencies](codebook.qmd) 2. [Data Assembly and Cleaning](assembly.qmd) 3. [Exploratory Analysis and Modeling](main.qmd)
+The recommended reading order is:
+
+1.  [Codebook and Dependencies](codebook.qmd)
+2.  [Data Assembly and Cleaning](assembly.qmd)
+3.  [Exploratory Analysis and Modeling](main.qmd)
 
 ------------------------------------------------------------------------
 

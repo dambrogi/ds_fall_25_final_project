@@ -97,7 +97,7 @@ ggplot(acs_with_access, aes(x = pov_below, y = chargers_accessible)) +
   theme_minimal()
 ```
 
-## Summarizing / Visualizing Distribution of \# of Chargers
+## Distribution of Count of Accessible Chargers
 
 Because charger access is our dependent variable, it is important for us to understand its distribution. It becomes immediately clear that we're working with a heavily skewed distribution that has an extremely long tail.
 
@@ -444,7 +444,7 @@ lasso_model_metrics <- tibble(
 lasso_model_metrics
 ```
 
-Though its performance is modest, results are consistent across the training and test sets, suggesting that the model is not overfitting. Notably, accuracy is similar to that of the decision tree model and to the R\^2 from the linear specification. While these metrics are not directly comparable, their similarity suggests that we may be reaching the limits of what our selected predictors can explain about charger deployment.
+Though its performance is modest, results are consistent across the training and test sets, suggesting that the model is not over-fitting. Notably, accuracy is similar to that of the decision tree model and to the R\^2 from the linear specification. While these metrics are not directly comparable, their similarity suggests that we may be reaching the limits of what our selected predictors can explain about charger deployment.
 
 ### Evaluating Variable Importance
 
@@ -508,6 +508,6 @@ Our results are somewhat intuitive. Neighborhoods with higher shares of renters 
 
 The modest performance of all three models underscores the limits of tract-level characteristics in explaining charger deployment. The linear model explains roughly 41% of the variation in charger counts, while the tree and LASSO models show similar, modest levels of predictive accuracy, particularly for tracts with intermediate levels of access (in the case of the LASSO model). This consistency across approaches suggests that other variables or predictors not accounted for in this analysis may play a significant role in shaping charger deployment. For example, our datset did not account for tract proximity to major highways, which may be a strong predictor of charger access. Nor did we look at factors related to infrastructure investment, such as which tracts may have had access to state or federal funding to support charger development. \
 \
-From a policy perspective, our findings suggest that market-driven deployment naturally prioritizes neighborhoods where public charging is most feasible and immediately demanded, including higher-density and higher-income areas with limited access to private charging. While this pattern makes sense economically, it may also reinforce existing structural inequalities embedded in the built environment. That variables such like white population emerged as important in the decision tree model likely reflect longstanding differences in neighborhood form, infrastructure investment, and land use rather than intentional targeting.  Addressing these gaps may require policy reform that directly targets these issues rather than a more general approach. 
+From a policy perspective, our findings suggest that market-driven deployment naturally prioritizes neighborhoods where public charging is most feasible and immediately demanded, including higher-density and higher-income areas with limited access to private charging. While this pattern makes sense economically, it may also reinforce existing structural inequalities embedded in the built environment. That variables such like white population emerged as important in the decision tree model likely reflect longstanding differences in neighborhood form, infrastructure investment, and land use rather than intentional targeting. Addressing these gaps may require policy reform that directly targets these issues rather than a more general approach. 
 
 Future research could extend this analysis by incorporating local policy variables, utility infrastructure data, roadmaps, and electric vehicle registration data to better capture demand for charging as well as the institutional and regulatory drivers of charger placement. Together, these extensions would help clarify not only where chargers are lacking, but which policy levers are most effective in closing access gaps as EV adoption continues to expand. 

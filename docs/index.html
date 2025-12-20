@@ -9,7 +9,7 @@
 <meta name="author" content="Drew Ambrogi and Ameenah Habib">
 <meta name="dcterms.date" content="2025-12-20">
 
-<title>Introduction</title>
+<title>Exploring Predictors of EV Charger Access</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -4727,7 +4727,7 @@ vertical-align: -.125em;
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
     <a class="nav-link active" href="./index.html" aria-current="page"> 
-<span class="menu-text">Introduction</span></a>
+<span class="menu-text">Introduction (Home)</span></a>
   </li>  
   <li class="nav-item">
     <a class="nav-link" href="./codebook.html"> 
@@ -4757,9 +4757,12 @@ vertical-align: -.125em;
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#codebook-and-dependencies" id="toc-codebook-and-dependencies" class="nav-link active" data-scroll-target="#codebook-and-dependencies">Codebook and Dependencies</a></li>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a>
+  <ul class="collapse">
+  <li><a href="#codebook-and-dependencies" id="toc-codebook-and-dependencies" class="nav-link" data-scroll-target="#codebook-and-dependencies">Codebook and Dependencies</a></li>
   <li><a href="#data-assembly-and-cleaning" id="toc-data-assembly-and-cleaning" class="nav-link" data-scroll-target="#data-assembly-and-cleaning">Data Assembly and Cleaning</a></li>
   <li><a href="#exploratory-analysis-and-modeling" id="toc-exploratory-analysis-and-modeling" class="nav-link" data-scroll-target="#exploratory-analysis-and-modeling">Exploratory Analysis and Modeling</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -4768,7 +4771,7 @@ vertical-align: -.125em;
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Introduction</h1>
+<h1 class="title">Exploring Predictors of EV Charger Access</h1>
 </div>
 
 
@@ -4797,13 +4800,20 @@ vertical-align: -.125em;
 </header>
 
 
+<section id="introduction" class="level1">
+<h1>Introduction</h1>
 <p>Electric vehicle (EV) usage is on the rise as more Americans become more aware of the state of climate change and become more environmentally conscious. However, this transition is only effective if there is appropriate infrastructure for it. There must be enough charging stations accessible to the public for this to be both an effective and efficient transition. Furthermore, as this transition is in the early stages, it is critical to create an infrastructure that is fair and equal among different socioeconomic areas across the United States.</p>
 <p>This project aims to look into a simple but important question: <em>Are public EV charging stations fairly distributed across different kinds of neighborhoods, or are some communities being left behind?</em> Charger locations in the United States are shaped by a mix of forces including market incentives, local zoning rules, corporate partnerships, and state and federal subsidies. As a result, the geographic pattern of EV chargers may reflect structural advantages rather than purely consumer needs. This project will examine whether those forces collectively produce unequal access to charging.</p>
 <p>To investigate this issue, we combine data from two primary sources. First, we use the National Renewable Energy Laboratory’s (NREL) <a href="https://developer.nrel.gov/docs/transportation/alt-fuel-stations-v1/">alternative fuel stations database API</a>, which provides detailed information on the locations and types of public EV charging stations nationwide. Second, we merge this information with census-tract-level demographic and housing data from the 2023 5-year American Community Survey, including measures of income, race, population size, and commuter patterns. Combined, this creates a comprehensive dataset that allows us to analyze charger availability in neighborhoods across the country and differentiate between different socioeconomic conditions.</p>
 <p>We then do some precursory exploration of the dataset, including mapping certain regions and plotting how charger access interacts with select demographic characteristics.</p>
 <p>Building on this exploratory work, we estimate a series of models to identify which neighborhood characteristics are most strongly associated with charger access. We begin with a standardized linear regression to assess relative predictor importance for charger counts, followed by a classification decision tree to capture nonlinear relationships and threshold effects. Finally, we fit a multinomial LASSO model to examine how predictors differ across charger density categories while reducing noise from correlated variables. Across these approaches, we use techniques including feature engineering, normalization, cross validation, regularization, model comparison, and variable importance analysis. Together, these methods allow us to move beyond simple correlations and better understand the structural factors shaping where public EV charging infrastructure is deployed.</p>
 <p>The analysis proceeds in three parts, each documented below.</p>
-<p>The recommended reading order is: 1. <a href="./codebook.html">Codebook and Dependencies</a> 2. <a href="./assembly.html">Data Assembly and Cleaning</a> 3. <a href="./main.html">Exploratory Analysis and Modeling</a></p>
+<p>The recommended reading order is:</p>
+<ol type="1">
+<li><a href="./codebook.html">Codebook and Dependencies</a></li>
+<li><a href="./assembly.html">Data Assembly and Cleaning</a></li>
+<li><a href="./main.html">Exploratory Analysis and Modeling</a></li>
+</ol>
 <hr>
 <section id="codebook-and-dependencies" class="level3">
 <h3 class="anchored" data-anchor-id="codebook-and-dependencies">Codebook and Dependencies</h3>
@@ -4825,6 +4835,7 @@ vertical-align: -.125em;
 <p>➡️ <a href="./main.html"><strong>Exploratory Analysis and Modeling</strong></a></p>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
