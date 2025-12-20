@@ -1,5 +1,5 @@
 ---
-title: "Title TBD"
+title: "Exploring Predictors of EV Charger Access"
 author: "Drew Ambrogi and Ameenah Habib"
 date: "December 20, 2025"
 output-file: index.html
@@ -618,6 +618,7 @@ lm_vi_plot <- ggplot(plot_df_mag, aes(x = mag, y = term)) +
   geom_col() +
   labs(
     x = "Absolute standardized coefficient",
+    y = "Predictor",
     title = "Standardized OLS Model",
     subtitle = "Variable importance by magnitude"
   ) 
@@ -703,7 +704,13 @@ We examine variable importance from the fitted classification tree to understand
 ```{r}
 rpart_fit |>
   extract_fit_parsnip() |>
-  vip()
+  vip() +
+  labs(
+    title = "Variable Importance from Decision Tree Model",
+    y = "Importance",
+    x = "Predictor"
+  )
+
 ```
 In this model, population density dominates, indicating that density is the single most useful first cut for distinguishing between tracts with very low versus nonzero charger counts. This reflects the tree’s structure. It prioritizes variables that best split the data early, rather than distributing explanatory power across a collection of variables, as in the linear model. Density likely serves as a proxy for a group of conditions that matter for charger placement, including land use, commercial activity, and overall demand.
 
