@@ -1,6 +1,8 @@
 
 data/
 
+scratch/
+
 .DS_Store
 
 # History files
@@ -52,3 +54,5 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+
+/.quarto/
