@@ -4797,10 +4797,10 @@ vertical-align: -.125em;
 </header>
 
 
-<p>Electric vehicles (EVs) usage is on the rise as more Americans become more aware of the state of climate change and become more environmentally conscious. However, this transition is only effective if there is appropriate infrastructure for it. There must be enough charging stations accessible to the public for this to be both an effective and efficient transition. Furthermore, as this transition is in the early stages, it is critical to create an infrastructure that is fair and equal amongst different socioeconomic areas across the United States.</p>
-<p>This project aims to look into a simple but important question: Are public EV charging stations fairly distributed across different kinds of neighborhoods, or are some communities being left behind? Charger locations in the United States are shaped by a mix of forces including market incentives, local zoning rules, corporate partnerships, and state and federal subsidies. As a result, the geographic pattern of EV chargers may reflect structural advantages rather than purely consumer needs. This project will examine whether those forces collectively produce unequal access to charging.</p>
-<p>To investigate this issue, we combine data from two primary sources. First, we use the U.S. Department of Energy’s public API, which provides detailed information on the locations and types of public EV charging stations nationwide. Second, we merge this information with census-tract-level demographic and housing data from the American Community Survey, including measures of income, race, population size, and commuter patterns. Combined, this creates a comprehensive dataset that allows us to analyze charger availability in neighborhoods across the country and differentiate between different socioeconomic conditions.</p>
-<p>We then use visualizations do some precursory exploration of the dataset, including mapping certain regionas and exploring how charger access interacts with select demographic characteristics.</p>
+<p>Electric vehicle (EV) usage is on the rise as more Americans become more aware of the state of climate change and become more environmentally conscious. However, this transition is only effective if there is appropriate infrastructure for it. There must be enough charging stations accessible to the public for this to be both an effective and efficient transition. Furthermore, as this transition is in the early stages, it is critical to create an infrastructure that is fair and equal among different socioeconomic areas across the United States.</p>
+<p>This project aims to look into a simple but important question: <em>Are public EV charging stations fairly distributed across different kinds of neighborhoods, or are some communities being left behind?</em> Charger locations in the United States are shaped by a mix of forces including market incentives, local zoning rules, corporate partnerships, and state and federal subsidies. As a result, the geographic pattern of EV chargers may reflect structural advantages rather than purely consumer needs. This project will examine whether those forces collectively produce unequal access to charging.</p>
+<p>To investigate this issue, we combine data from two primary sources. First, we use the National Renewable Energy Laboratory’s (NREL) <a href="https://developer.nrel.gov/docs/transportation/alt-fuel-stations-v1/">alternative fuel stations database API</a>, which provides detailed information on the locations and types of public EV charging stations nationwide. Second, we merge this information with census-tract-level demographic and housing data from the 2023 5-year American Community Survey, including measures of income, race, population size, and commuter patterns. Combined, this creates a comprehensive dataset that allows us to analyze charger availability in neighborhoods across the country and differentiate between different socioeconomic conditions.</p>
+<p>We then do some precursory exploration of the dataset, including mapping certain regions and plotting how charger access interacts with select demographic characteristics.</p>
 <p>Building on this exploratory work, we estimate a series of models to identify which neighborhood characteristics are most strongly associated with charger access. We begin with a standardized linear regression to assess relative predictor importance for charger counts, followed by a classification decision tree to capture nonlinear relationships and threshold effects. Finally, we fit a multinomial LASSO model to examine how predictors differ across charger density categories while reducing noise from correlated variables. Across these approaches, we use techniques including feature engineering, normalization, cross validation, regularization, model comparison, and variable importance analysis. Together, these methods allow us to move beyond simple correlations and better understand the structural factors shaping where public EV charging infrastructure is deployed.</p>
 <p>The analysis proceeds in three parts, each documented below.</p>
 <p>The recommended reading order is: 1. <a href="./codebook.html">Codebook and Dependencies</a> 2. <a href="./assembly.html">Data Assembly and Cleaning</a> 3. <a href="./main.html">Exploratory Analysis and Modeling</a></p>
@@ -4808,21 +4808,21 @@ vertical-align: -.125em;
 <section id="codebook-and-dependencies" class="level3">
 <h3 class="anchored" data-anchor-id="codebook-and-dependencies">Codebook and Dependencies</h3>
 <p>This section explains the libraries used and other steps needed to recreate our analysis. It also contains an overview of all variables in our main data set.</p>
-<p>➡️ <strong><a href="./codebook.html">Codebook and Dependencies</a></strong></p>
+<p>➡️ <a href="./codebook.html"><strong>Codebook and Dependencies</strong></a></p>
 <hr>
 </section>
 <section id="data-assembly-and-cleaning" class="level3">
 <h3 class="anchored" data-anchor-id="data-assembly-and-cleaning">Data Assembly and Cleaning</h3>
 <p>This section walks through the steps we took to assemble our main dataset.</p>
 <p>It explains how raw inputs are transformed into the final tract-level dataset used in exploratory analysis and modeling.</p>
-<p>➡️ <strong><a href="./assembly.html">Data Assembly and Cleaning</a></strong></p>
+<p>➡️ <a href="./assembly.html"><strong>Data Assembly and Cleaning</strong></a></p>
 <hr>
 </section>
 <section id="exploratory-analysis-and-modeling" class="level3">
 <h3 class="anchored" data-anchor-id="exploratory-analysis-and-modeling">Exploratory Analysis and Modeling</h3>
 <p>This section presents descriptive analysis, visual exploration, and statistical modeling results. It examines patterns in charger access and evaluates which factors are most strongly associated with observed deployment outcomes.</p>
 <p>Modeling choices, diagnostics, and interpretation are discussed in detail.</p>
-<p>➡️ <strong><a href="./main.html">Exploratory Analysis and Modeling</a></strong></p>
+<p>➡️ <a href="./main.html"><strong>Exploratory Analysis and Modeling</strong></a></p>
 
 
 </section>

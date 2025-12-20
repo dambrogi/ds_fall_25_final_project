@@ -19,16 +19,11 @@ library(vip)
 acs_with_access <- readr::read_rds("data/acs_with_access.rds")
 ```
 
-
 # Exploratory Analysis
 
 ## Mapping tracts with and without EV Chargers in the United States.
-The following plot shows a map of the entire United States and where there is 
-access to EV chargers and where there isn't within the 1 mile buffer.
-It shows there is generally more access to chargers in urban and suburban areas and much less in rural areas.
-Furthermore, there is more concentration of charger access along the West Coast and Northeast, which are both
-highly populous areas. This maps provides a large overview of what charger access looks like across the U.S. 
-and it is clear that chargers are more accessible in areas with more population density. 
+
+The following plot shows a map of the entire United States and where there is access to EV chargers and where there isn't within the 1 mile buffer. It shows there is generally more access to chargers in urban and suburban areas and much less in rural areas. Furthermore, there is more concentration of charger access along the West Coast and Northeast, which are both highly populous areas. This maps provides a large overview of what charger access looks like across the U.S. and it is clear that chargers are more accessible in areas with more population density.
 
 ```{r}
 
@@ -44,11 +39,9 @@ ggplot(acs_with_access) +
 ```
 
 ## Charger Access in Virginia
-The plot below takes a deeper look at the charger access map, and focuses just on the state of Virginia. 
-It clearly shows that EV chargers are clustered in specific areas and not evenly distributed. 
-There are high concentration of chargers in Northern Virginia, Richmond, and Virginia Beach. Furthermore,
-the chargers tend to cluster around interstate highways. Intuitively, this makes sense that 
-the more popular areas tend to have more access to EV chargers. 
+
+The plot below takes a deeper look at the charger access map, and focuses just on the state of Virginia. It clearly shows that EV chargers are clustered in specific areas and not evenly distributed. There are high concentration of chargers in Northern Virginia, Richmond, and Virginia Beach. Furthermore, the chargers tend to cluster around interstate highways. Intuitively, this makes sense that the more popular areas tend to have more access to EV chargers.
+
 ```{r}
 va_tracts <- acs_with_access %>%
   filter(STATEFP == "51")
@@ -66,12 +59,9 @@ ggplot(va_tracts) +
   theme_minimal()
 ```
 
-## Charger Access in California 
-The other state that we looked at more deeply was California, there was a clear high access to 
-chargers in California specifically, so it is interesting to identify where there are gaps in such a
-saturated area. Similar to the map of Virginia, California's chargers are also concentrated most strongly in the Bay Area,
-LA, and San Diego. There is more charger clusters in rural areas such as Central Valley. California exemplifies
-a high investment and adoption scenario for EV chargers and can be used as a blueprint for the rest of the country. 
+## Charger Access in California
+
+The other state that we looked at more deeply was California, there was a clear high access to chargers in California specifically, so it is interesting to identify where there are gaps in such a saturated area. Similar to the map of Virginia, California's chargers are also concentrated most strongly in the Bay Area, LA, and San Diego. There is more charger clusters in rural areas such as Central Valley. California exemplifies a high investment and adoption scenario for EV chargers and can be used as a blueprint for the rest of the country.
 
 ```{r}
 ca_tracts <- acs_with_access %>%
@@ -90,12 +80,9 @@ ggplot(ca_tracts) +
   theme_minimal()
 ```
 
-## Scatter plot between EV Chargers and Population below Poverty 
-This last plot is a scatter plot between EV charger access and how much of the population 
-is below the poverty line. It shows a relatively weak positive association between the 
-two variables. The positive trend that is reflected in the plot is likely a result of more charger
-access in urban areas, rather than equity in distribution. Further enforces the point that there
-are a number of geographic factors that influence charger access and may not determined by equity.
+## Scatter plot between EV Chargers and Population below Poverty
+
+This last plot is a scatter plot between EV charger access and how much of the population is below the poverty line. It shows a relatively weak positive association between the two variables. The positive trend that is reflected in the plot is likely a result of more charger access in urban areas, rather than equity in distribution. Further enforces the point that there are a number of geographic factors that influence charger access and may not determined by equity.
 
 ```{r}
 ggplot(acs_with_access, aes(x = pov_below, y = chargers_accessible)) +
@@ -110,35 +97,9 @@ ggplot(acs_with_access, aes(x = pov_below, y = chargers_accessible)) +
   theme_minimal()
 ```
 
-## Summarizing / Visualizing Distribution of # of Chargers
-```{r}
-acs_with_access %>%
-  ggplot(aes(x = chargers_accessible)) +
-  geom_histogram(bins = 30, fill = "steelblue", color = "white") +
-  labs(
-    title = "Distribution of Accessible EV Chargers by Census Tract",
-    x = "Number of Accessible Chargers",
-    y = "Number of Census Tracts"
-  ) +
-  theme_minimal()
-```
+## Summarizing / Visualizing Distribution of \# of Chargers
 
-```{r}
-acs_with_access %>%
-  summarize(
-    n_tracts = n(),
-    min = min(chargers_accessible, na.rm = TRUE),
-    p10 = quantile(chargers_accessible, 0.10, na.rm = TRUE),
-    p25 = quantile(chargers_accessible, 0.25, na.rm = TRUE),
-    median = median(chargers_accessible, na.rm = TRUE),
-    mean = mean(chargers_accessible, na.rm = TRUE),
-    p75 = quantile(chargers_accessible, 0.75, na.rm = TRUE),
-    p90 = quantile(chargers_accessible, 0.90, na.rm = TRUE),
-    max = max(chargers_accessible, na.rm = TRUE)
-  )
-```
-
-(Explain distribution of chargers, decision to create categorical variable)
+Because charger access is our dependent variable, it is important for us to understand its distribution. It becomes immediately clear that we're working with a heavily skewed distribution that has an extremely long tail.
 
 ```{r}
 summary(acs_with_access$chargers_accessible)
@@ -147,27 +108,54 @@ summary(acs_with_access$chargers_accessible)
 ```{r}
 acs_with_access %>%
   ggplot(aes(x = chargers_accessible)) +
-  geom_histogram(bins = 30, fill = "steelblue", color = "white") +
+  geom_dotplot(binwidth = 1, dotsize = 0.6) +
   labs(
     title = "Distribution of Accessible EV Chargers by Census Tract",
     x = "Number of Accessible Chargers",
+    y = NULL
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank()
+  )
+```
+
+For this reason, we've created the variable `charger_cat`, which categorizes tracts in to one of 5 ordered categories based on charger density.
+
+-   "None" (0)
+-   "Very low" (1-2)
+-   "Low–moderate" (3-6)
+-   "High" (7-18)
+-   "Very high" (18+)
+
+Our goal here is to create meaningful categories with a sufficiently large number of tracts to allow for meaningful analysis in modeling. The distribution of `charger_cat` is shown below.
+
+```{r}
+acs_with_access %>%
+  ggplot(aes(x = charger_cat)) +
+  geom_bar() +
+  labs(
+    title = "Distribution of EV Charger Access Categories",
+    x = "Charger Access Category",
     y = "Number of Census Tracts"
   ) +
   theme_minimal()
 ```
-(Add plot of charger_cat)
 
 # Exploring Predictors of Charger Access
 
-(Explain choice of models)
+To evaluate what predicts access to EV chargers, we use three different modeling approaches, each designed to approach the question slightly differently. First, we estimate a linear model using the logged number of accessible chargers in a census tract. This lets us see how different neighborhood characteristics are associated with higher or lower charger availability, while accounting for the fact that chargers are very unevenly distributed across places. Second, we use a decision tree model with our categorical charger density measure. This approach is easier to interpret and helps reveal nonlinear patterns and combinations of factors that are associated with different levels of charger access. Finally, we estimate a LASSO model using the same categorical outcome. The LASSO helps us assess which variables are most useful for predicting charger access overall, while also narrowing the model to the most informative predictors within charger access categories.
 
-## Linear Model 
+Overall, we chose models that allowed us to examine which variables mattered most, while remaining interpretable and manageable, given our current level of experience with statistical modeling.
 
-We start with a simple OLS model. Here we opt for log chargers as our dependent variable, due to the long tail of in the distribution of charger counts. Because we are interested in the relative importance of our predictors, not their specific coefficients, we opt to normalise our variables for a cleaner comparison. 
+## Linear Model
+
+We start with a simple OLS model. Here we opt for log chargers as our dependent variable, due to the long tail of in the distribution of charger counts. Because we are interested in the relative importance of our predictors, not their specific coefficients, we opt to normalize our variables for a cleaner comparison.
 
 ### Defining and Fitting the Model
 
-First we select a limited amount of variables as potential predictors, and eliminate other variables that may be duplicative or irrelevant. This collection of predictors is used across all three models. 
+First we select a limited amount of variables as potential predictors, and eliminate other variables that may be redundant or irrelevant. This collection of predictors is used across all three models.
 
 ```{r}
 predictors <- c(
@@ -186,7 +174,7 @@ predictors <- c(
 )
 ```
 
-Then we create a clean dataframe, dropping geometry, and logging the count of chargers. We then define and fit the model. 
+Then we create a clean data frame, dropping geometry, and logging the count of chargers. We then define and fit the model.
 
 ```{r}
 lm_df <- acs_with_access %>%
@@ -210,17 +198,18 @@ lm_fit_std <- fit(lm_wf_std, data = lm_df)
 
 ### Evaluating the Model
 
-Because we use the count of chargers as our dependent variable with this model, we can't evaluate accuracy, recall, and precision the way we do with our decision tree and LASSO models later. However, we can look at the model's R^2 to roughtly understand how much of the variation in charger counts our model accounts for. 
+Because we use the count of chargers as our dependent variable with this model, we can't evaluate accuracy, recall, and precision the way we do with our decision tree and LASSO models later. However, we can look at the model's R\^2 to roughly understand how much of the variation in charger counts our model accounts for.
 
 ```{r}
 glance(lm_fit_std) %>%
   select(r.squared, adj.r.squared, nobs)
 ```
-We see that the model captured about 41% of the variation in charger counts. Substantial, but low enough to suggest there are other variables we aren't accounting for that play a significant role in determining counts. 
+
+We see that the model captured about 41% of the variation in charger counts. Substantial, but low enough to suggest there are other variables we aren't accounting for that play a significant role in determining counts.
 
 ### Evaluating Variable Importance
 
-To evaluate the importance of our predictors, we look at their coefficients. Since they have been normalized, we can easily compare them. 
+To evaluate the importance of our predictors, we look at their coefficients. Since they have been normalized, we can easily compare them.
 
 ```{r}
 lm_coef_table_std <- tidy(lm_fit_std) %>%
@@ -242,9 +231,11 @@ lm_coef_table_std <- tidy(lm_fit_std) %>%
 
 lm_coef_table_std
 ```
-With the exception of `pct_white_nh`, the percentage of the tract's population which is white (Non-Hispanic/Latino), all of our predictors are highly significant. 
+
+With the exception of `pct_white_nh`, the percentage of the tract's population which is white (Non-Hispanic/Latino), all of our predictors are highly significant.
 
 A simple visualization makes the comparison more clear:
+
 ```{r}
 plot_df_mag <- tidy(lm_fit_std) %>%
   filter(term != "(Intercept)") %>%
@@ -265,19 +256,20 @@ lm_vi_plot <- ggplot(plot_df_mag, aes(x = mag, y = term)) +
 
 lm_vi_plot
 ```
-(Importantly, this shows the absolute value of the magintude of each coefficient, though some variables had a negative impact on number of available chargers.)
+
+(Importantly, this shows the absolute value of the magnitude of each coefficient, though some variables had a negative impact on number of available chargers.)
 
 The variable importance results suggest that charger deployment is being driven less by simple population metrics and more by housing type, travel behavior, and market conditions. The strongest positive predictors are renter share, median household income, and multifamily housing share. This pattern is intuitive. Renters and residents of multifamily buildings are less likely to have access to private, at home charging, which increases demand for public or shared chargers. At the same time, higher income areas are more likely to attract early infrastructure investment, either because residents are more likely to own EVs or because these neighborhoods have greater resources to support deployment.
 
 Commute by car share plays a strongly negative role, which is consistent with the fact that our analysis focuses only on public chargers. In areas where a larger share of residents commute by car, households are more likely to have access to private parking and private chargers, reducing reliance on public infrastructure. Population density plays a smaller and negative role, suggesting that density alone does not guarantee more chargers. This makes sense, considering that in very dense urban neighborhoods, limited curb space, older infrastructure, and more complex permitting constraints can make deployment more difficult. This helps explain why both high commute by car share and high zero vehicle share are associated with fewer public chargers. On one end are tracts where private vehicles, parking, and home charging are common. On the other are dense urban tracts with fewer cars but greater physical and regulatory barriers. In both cases, demand for or feasibility of public chargers are lower.
 
-The smaller effects for race, poverty, and related variables are harder to interpret directly and likely reflect broader neighborhood characteristics correlated with housing form, land use, and infrastructure conditions rather than intentional targeting. 
+The smaller effects for race, poverty, and related variables are harder to interpret directly and likely reflect broader neighborhood characteristics correlated with housing form, land use, and infrastructure conditions rather than intentional targeting.
 
 ## Decision Tree Model
 
-###Defining and Fitting the Model
+### Defining and Fitting the Model
 
-We create a dataframe for use with this model, dropping grometries which are not needed for this analysis, and selecting the same set of predictors used in the previous model. We drop census tracks with NA values. We then split the data into testing and training sets.
+We create a data frame for use with this model, dropping geometries which are not needed for this analysis, and selecting the same set of predictors used in the previous model. We drop census tracks with NA values. We then split the data into testing and training sets.
 
 ```{r}
 tree_model_df <- acs_with_access %>%
@@ -293,7 +285,7 @@ tree_model_df_train <- training(x = tree_model_df_split)
 tree_model_df_test  <- testing(x = tree_model_df_split)
 ```
 
-We fit a classification tree using rpart and set two regularization parameters to keep the model from chasing noise. The complexity parameter `(cp = 0.005)` so that a split is only kept if it improves model fit by at least about 0.5%, which discourages lots of small, low-value splits and produces a tree that is easier to interpret. We also set `minsplit = 250`, meaning a node must contain at least 250 training observations before it can be split.
+We fit a classification tree using `rpart` and set two regularization parameters to keep the model from chasing noise. The complexity parameter `(cp = 0.005)` so that a split is only kept if it improves model fit by at least about 0.5%, which discourages lots of small, low-value splits and produces a tree that is easier to interpret. We also set `minsplit = 250`, meaning a node must contain at least 250 training observations before it can be split.
 
 ```{r}
 tree_rec <- recipe(charger_cat ~ ., data = tree_model_df_train)
@@ -335,14 +327,15 @@ tree_model_metrics <- tibble(
 
 tree_model_metrics
 ```
-(Add evaluation)
+
+Overall, the model shows modest and stable performance, with nearly identical results on the training and test sets. Precision, recall, and accuracy all fall in the low-to-mid 0.3 to 0.4 range, suggesting the model captures some signal but struggles to classify charger access categories reliably. It is worth noting, however, that our model outperforms random assignment, which would achieve 20% accuracy given our five categories.
 
 ### Evaluating Variable Importance
 
 We examine variable importance from the fitted classification tree to understand which features the model relies on most when splitting observations.
 
 ```{r}
-rpart_fit |>
+tree_viz <- rpart_fit |>
   extract_fit_parsnip() |>
   vip() +
   labs(
@@ -351,7 +344,9 @@ rpart_fit |>
     x = "Predictor"
   )
 
+tree_viz
 ```
+
 In this model, population density dominates, indicating that density is the single most useful first cut for distinguishing between tracts with very low versus nonzero charger counts. This reflects the tree’s structure. It prioritizes variables that best split the data early, rather than distributing explanatory power across a collection of variables, as in the linear model. Density likely serves as a proxy for a group of conditions that matter for charger placement, including land use, commercial activity, and overall demand.
 
 After splitting on density, the tree places greater weight on multifamily housing share and commute by car share. This suggests that once a tract clears a basic density threshold, housing form and travel behavior help explain where chargers are more likely to be deployed within similarly dense areas. Variables that were important in the linear model, such as renter share and income, appear less prominent here likely because they overlap strongly with density and housing type and add less predictive power after the initial splits.
@@ -362,9 +357,9 @@ The relatively small importance of most demographic variables suggests that the 
 
 Our third model is a LASSO model specified as a multinomial logistic regression predicting charger density category (charger_cat). This approach allows us to examine how the importance of different tract characteristics varies across charger density levels, rather than estimating a single average relationship across the entire dataset. In addition, the LASSO penalty provides a robustness check by shrinking weaker or redundant predictors, helping highlight which variables remain important for distinguishing between charger density categories.
 
-### Defining and Fitting the Model 
+### Defining and Fitting the Model
 
-We use the same collection of predictors for our LASSO model, and split the data in the same way. We also confirm that our variable `charger_cat` is encoded as a factor. 
+We use the same collection of predictors for our LASSO model, and split the data in the same way. We also confirm that our variable `charger_cat` is encoded as a factor.
 
 ```{r}
 lasso_df <- acs_with_access %>%
@@ -381,7 +376,7 @@ lasso_df_train <- training(x = lasso_df_split)
 lasso_df_test <- testing(x = lasso_df_split)
 ```
 
-We define a multinomial LASSO model and estimate it using 5 fold cross validation with a 30 value tuning grid. We evaluate model performance using log loss, which accounts not only for whether the model predicts the correct category, but also how confident it is in its predictions. 
+We define a multinomial LASSO model and estimate it using 5 fold cross validation with a 30 value tuning grid. We evaluate model performance using log loss, which accounts not only for whether the model predicts the correct category, but also how confident it is in its predictions.
 
 ```{r}
 lasso_rec <- recipe(charger_cat ~ ., data = lasso_df_train) %>%
@@ -418,6 +413,7 @@ best_lambda
 
 autoplot(lasso_tuned)
 ```
+
 We then fit the model and store its predictions for evaluation.
 
 ```{r}
@@ -448,7 +444,7 @@ lasso_model_metrics <- tibble(
 lasso_model_metrics
 ```
 
-Though its performance is modest, results are consistent across the training and test sets, suggesting that the model is not overfitting. Notably, accuracy is similar to that of the decision tree model and to the R^2 from the linear specification. While these metrics are not directly comparable, their similarity suggests that we may be reaching the limits of what our selected predictors can explain about charger deployment.
+Though its performance is modest, results are consistent across the training and test sets, suggesting that the model is not overfitting. Notably, accuracy is similar to that of the decision tree model and to the R\^2 from the linear specification. While these metrics are not directly comparable, their similarity suggests that we may be reaching the limits of what our selected predictors can explain about charger deployment.
 
 ### Evaluating Variable Importance
 
@@ -467,7 +463,7 @@ coef_tbl <- final_lasso %>%
 
 These results largely reinforce the patterns we saw in the linear and tree based models, while adding more detail about how different variables matter at different points along the charger density spectrum. The clearest structure appears at the extremes. Tracts with no chargers are strongly characterized by lower renter share, lower multifamily housing share, lower income, and lower density, alongside higher commute by car share. In other words, places with predominantly single family housing, private vehicles, and private parking are systematically less likely to host public chargers. On the opposite end, very high charger density tracts show the mirror image of this pattern: higher renter share, higher income, more multifamily housing, and lower commute by car share. These are precisely the environments where demand for shared charging is highest and deployment is most feasible, which aligns closely with our earlier interpretations.
 
-The middle categories are notably less structured. For the low–moderate category in particular, most coefficients are reduced to zero, suggesting that the intermediate levels of charger density are harder to explain using tract level characteristics. 
+The middle categories are notably less structured. For the low–moderate category in particular, most coefficients are reduced to zero, suggesting that the intermediate levels of charger density are harder to explain using tract level characteristics.
 
 The plot below visualizes these coefficients, showing both the average and maximum coefficient across classes.
 
@@ -504,10 +500,14 @@ lasso_viz <- ggplot(lasso_viz_long,
 lasso_viz
 ```
 
-## Discussion
-
-(Add discussion)
-
 # Conclusion
 
-(Add conclusion)
+Across three modeling approaches used in this project: a linear regression, a decision tree, and a multinomial LASSO, we found evidence that charger placement is driven less by simple population counts and more by housing form, travel behavior, and economic conditions. Variables such as renter share, multifamily housing prevalence, income, and commute patterns repeatedly emerge as the strongest predictors of charger access, while demographic characteristics like race and poverty play smaller and more indirect roles. This trend is further reinforced by the scatterplot shared earlier that shows a very weak relationship between charger availability and poverty levels. 
+
+Our results are somewhat intuitive. Neighborhoods with higher shares of renters and multifamily housing are more likely to host public chargers, reflecting lower access to private, at-home charging and greater demand for shared infrastructure. Income also matters, likely capturing both early EV adoption patterns and the ability of attracting private and public investment. In contrast, areas characterized by single-family housing and high car commuting shares are less likely to have public chargers, either because private charging substitutes for public infrastructure or because demand is weaker. 
+
+The modest performance of all three models underscores the limits of tract-level characteristics in explaining charger deployment. The linear model explains roughly 41% of the variation in charger counts, while the tree and LASSO models show similar, modest levels of predictive accuracy, particularly for tracts with intermediate levels of access (in the case of the LASSO model). This consistency across approaches suggests that other variables or predictors not accounted for in this analysis may play a significant role in shaping charger deployment. For example, our datset did not account for tract proximity to major highways, which may be a strong predictor of charger access. Nor did we look at factors related to infrastructure investment, such as which tracts may have had access to state or federal funding to support charger development. \
+\
+From a policy perspective, our findings suggest that market-driven deployment naturally prioritizes neighborhoods where public charging is most feasible and immediately demanded, including higher-density and higher-income areas with limited access to private charging. While this pattern makes sense economically, it may also reinforce existing structural inequalities embedded in the built environment. That variables such like white population emerged as important in the decision tree model likely reflect longstanding differences in neighborhood form, infrastructure investment, and land use rather than intentional targeting.  Addressing these gaps may require policy reform that directly targets these issues rather than a more general approach. 
+
+Future research could extend this analysis by incorporating local policy variables, utility infrastructure data, roadmaps, and electric vehicle registration data to better capture demand for charging as well as the institutional and regulatory drivers of charger placement. Together, these extensions would help clarify not only where chargers are lacking, but which policy levers are most effective in closing access gaps as EV adoption continues to expand. 
